@@ -242,25 +242,19 @@ class DNN(object):
 
     def predict(self, X):
         """ Predict.
-
         Model prediction for given input data.
-
         Arguments:
             X: array, `list` of array (if multiple inputs) or `dict`
                 (with inputs layer name as keys). Data to feed for prediction.
-
         Returns:
             array or `list` of array. The predicted probabilities.
-
         """
         feed_dict = feed_dict_builder(X, None, self.inputs, None)
         return self.predictor.predict(feed_dict)
 
     def predict_label(self, X):
         """ Predict Label.
-
         Predict class labels for input X.
-
         Arguments:
             X: array, `list` of array (if multiple inputs) or `dict`
                 (with inputs layer name as keys). Data to feed for prediction.

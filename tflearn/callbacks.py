@@ -210,9 +210,7 @@ class TermLogger(Callback):
             # fix diplay, if step reached the whole epoch, display epoch - 1, as epoch has been updated
             print_epoch = data['epoch']
             # Smoothing display, so we show display at step + 1 to show data_size/data_size at end
-            print_step = " -- iter: " + \
-                         ("%0" + str(len(str(data['data_size']))) +
-                          "d") % data['step'] + "/" + str(data['data_size'])
+            print_step = " -- iter: " + ("%0" + str(len(str(data['data_size']))) +"d") % data['step'] + "/" + str(data['data_size'])
             if data['step'] == 0:
                 print_epoch = data['epoch']
                 # print_step = ""

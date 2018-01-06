@@ -43,6 +43,7 @@ def to_categorical(y, nb_classes=None):
         y: `array`. Class vector to convert.
         nb_classes: `unused`. Used for older code compatibility.
     """
+    y = np.array(y)
     return (y[:, None] == np.unique(y)).astype(np.float32)
 
 
@@ -581,22 +582,28 @@ def pil_to_nparray(pil_image):
 def image_dirs_to_samples(directory, resize=None, convert_gray=None,
                           filetypes=None):
     print("Starting to parse images...")
+
     if filetypes:
         if filetypes not in [list, tuple]: filetypes = list(filetypes)
-    samples, targets = directory_to_samples(directory, flags=filetypes)
+
+    samples, labels = directory_to_samples(directory, flags=filetypes)
+
+    #image resize and nomalization
     for i, s in enumerate(samples):
         samples[i] = load_image(s)
         if resize:
             samples[i] = resize_image(samples[i], resize[0], resize[1])
         if convert_gray:
             samples[i] = convert_color(samples[i], 'L')
+
         samples[i] = pil_to_nparray(samples[i])
         samples[i] /= 255.
+        # print(samples[i])
     print("Parsing Done!")
-    return samples, targets
+    return samples, labels
 
 
-def build_image_dataset_from_dir(directory,
+def build_image_dataset_from_pickle(directory,
                                  dataset_file="my_tflearn_dataset.pkl",
                                  resize=None, convert_gray=None,
                                  filetypes=None, shuffle_data=False,
@@ -604,14 +611,32 @@ def build_image_dataset_from_dir(directory,
     try:
         X, Y = pickle.load(open(dataset_file, 'rb'))
     except Exception:
-        X, Y = image_dirs_to_samples(directory, resize, convert_gray, filetypes)
-        if categorical_Y:
-            Y = to_categorical(Y, np.max(Y) + 1) # First class is '0'
-        if shuffle_data:
-            X, Y = shuffle(X, Y)
-        pickle.dump((X, Y), open(dataset_file, 'wb'))
+        SystemExit()
     return X, Y
 
+def build_image_dataset_from_dir(directory,
+                                 resize=None,
+                                 convert_gray=None,
+                                 filetypes=None,
+                                 shuffle_data=False,
+                                 categorical_Y=False):
+    # try:
+    #     X, Y = pickle.load(open(dataset_file, 'rb'))
+    # except Exception:
+    #     X, Y = image_dirs_to_samples(directory, resize, convert_gray, filetypes)
+    #     if categorical_Y:
+    #         Y = to_categorical(Y, np.max(Y) + 1) # First class is '0'
+    #     if shuffle_data:
+    #         X, Y = shuffle(X, Y)
+    #     pickle.dump((X, Y), open(dataset_file, 'wb'))
+    # return X, Y
+    X, labels = image_dirs_to_samples(directory, resize, convert_gray, filetypes)
+
+    if categorical_Y:
+        labels = to_categorical(labels, np.max(labels) + 1) # First class is '0'
+    if shuffle_data:
+        X, labels = shuffle(X, labels)
+    return X,labels
 
 def random_flip_leftright(x):
     if bool(random.getrandbits(1)):
@@ -737,21 +762,32 @@ def directory_to_samples(directory, flags=None, filter_channel=False):
     samples = []
     targets = []
     label = 0
+
     try: # Python 2
         classes = sorted(os.walk(directory).next()[1])
     except Exception: # Python 3
         classes = sorted(os.walk(directory).__next__()[1])
+
     for c in classes:
         c_dir = os.path.join(directory, c)
+
         try: # Python 2
             walk = os.walk(c_dir).next()
         except Exception: # Python 3
             walk = os.walk(c_dir).__next__()
+
         for sample in walk[2]:
             if not flags or any(flag in sample for flag in flags):
                 if filter_channel:
                     if get_img_channel(os.path.join(c_dir, sample)) != 3:
                         continue
+
+                # im = Image.open(c_dir + "/" +sample)
+                # rgb_im = im.convert('RGB')
+                # pre, ext = os.path.splitext(c_dir + "/" +sample)
+                # rgb_im.save(c_dir + "/" +sample)
+                # os.rename(c_dir + "/" +sample, pre + ".jpg")
+
                 samples.append(os.path.join(c_dir, sample))
                 targets.append(label)
         label += 1

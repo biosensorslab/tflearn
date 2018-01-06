@@ -17,6 +17,8 @@ from tflearn import losses
 def input_data(shape=None, placeholder=None, dtype=tf.float32,
                data_preprocessing=None, data_augmentation=None,
                name="InputData"):
+    #GraphInit
+    tf.reset_default_graph()
     """ Input Data.
 
     This layer is used for inputting (aka. feeding) data to a network.

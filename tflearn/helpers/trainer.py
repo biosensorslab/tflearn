@@ -299,7 +299,7 @@ class Trainer(object):
                                name=train_op.name)
 
             max_batches_len = np.max([t.n_batches for t in self.train_ops])
-
+            max_batches_len = 2
             caller = tf_callbacks.ChainCallback(callbacks=[termlogger, modelsaver])
 
             callbacks = to_list(callbacks)
